@@ -5,7 +5,7 @@
 
 const char* ssid = "AGUSCASA";
 const char* password = "ardp3456.";
-const char* serverName = "http://192.168.1.6:8080";
+const char* serverName = "http://192.168.1.8:8080";
 
 unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
@@ -22,10 +22,7 @@ void setup()
 
 void loop()
 {
-  String msg = "{\"ssss\":\"123\"}";
-  //mySerial.readStringUntil('\n');
-  //Serial.println(msg);
-  sendPostRequests(msg);
+  sendPostRequests();
   delay(5000);
 }
 
@@ -44,9 +41,11 @@ void setUpWifi()
   Serial.println("Timer set to 5 seconds (timerDelay variable), it will take 5 seconds before publishing the first reading.");
 }
 
-void sendPostRequests(String msg) 
+void sendPostRequests() 
 {
   // Envio un Post cada 5 segundos
+  String msg = mySerial.readStringUntil('\n');
+  Serial.println(msg);
   
   if ((millis() - lastTime) > timerDelay) {
     //Check WiFi connection status
@@ -59,9 +58,9 @@ void sendPostRequests(String msg)
       // seguridad ... ?
       
       http.addHeader("Content-Type", "application/json");
-      int httpResponseCode = http.POST("{\"fecha\":\"fecha del nodemcu\",\"areas\":[{\"id\":1,\"nombre\":\"area almacenaje\",\"sensores\":[{\"id\":1,\"tipo\":\"movimiento\",\"valor\":\"10\"},{\"id\":2,\"tipo\":\"humedad y temperatura\",\"valor\":\"20\"},{\"id\":3,\"tipo\":\"monoxido de carbono\",\"valor\":\"20\"}]}]}");
+      //int httpResponseCode = http.POST("{\"fecha\":\"fecha del nodemcu\",\"areas\":[{\"id\":1,\"nombre\":\"area almacenaje\",\"sensores\":[{\"id\":1,\"tipo\":\"movimiento\",\"valor\":\"10\"},{\"id\":2,\"tipo\":\"humedad y temperatura\",\"valor\":\"20\"},{\"id\":3,\"tipo\":\"monoxido de carbono\",\"valor\":\"20\"}]}]}");
 
-      //int httpResponseCode = http.POST(msg);
+      int httpResponseCode = http.POST(msg);
       
      
       Serial.print("HTTP Response code: ");

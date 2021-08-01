@@ -47,11 +47,12 @@ void setup(){
 
 void loop()
 {
+
+  char msj[40];
   /*
    * SENSOR DHT11 TEMPERATURA Y HUMEDAD
    */
-  delay(500);
-
+  /*  
   float h = dht.readHumidity();        // humedad
   float t = dht.readTemperature();     // temperatura en Celcius
   
@@ -66,6 +67,8 @@ void loop()
   Serial.println(" °C ");
   }
 
+  */
+
 
   /*
    * SENSOR MQ7
@@ -73,16 +76,13 @@ void loop()
    
    // -- 1 version digital
    boolean mq_estado = digitalRead(MQ7PIN); // Se obtiene el valor negado al sensado, arroja 1 si no detecta gas
-   if(mq_estado)
-      Serial.println("Sin presencia de GAS");
-  else 
-      Serial.println("GAS detectado");
  
   
   // -- 2 version analogica
   int adc_MQ = analogRead(A0); //Lemos la salida analógica del MQ
   float voltaje = adc_MQ * (5.0 / 1023.0); //Convertimos la lectura en un valor de voltaje
 
+/*
   if(adc_MQ > 100)
       Serial.println("Se detecta un el GAS");
 
@@ -90,28 +90,21 @@ void loop()
   Serial.print(adc_MQ);
   Serial.print("    voltaje:");
   Serial.println(voltaje);
+*/
     
-  delay(100); 
-
   
    /*
    * SENSOR HC MOVIMIENTO
    */
-   
+  /* 
   digitalWrite(TRIGPIN, LOW); // digitalWrite modifica el estado de una variable conectada al arduino, en este caso se apaga la salida trigger (sensor no esta funcionado)
-  
   delay(1000); // delay en microsegundos
-
   digitalWrite(TRIGPIN, HIGH); // Se activa la salida trigger => el sensor empieza a funcionar
-  
   delay(1000);
-  
   digitalWrite(TRIGPIN, LOW); // Se apaga el sensor
   duration = pulseIn(ECHOPIN, HIGH); // Se obtiene el valor retornado por el pin echo
   distance = duration*0.034/2; // Se calcula la distancia en cm 
-
   delay(1000);
-
 
   if(distance < distancia_maxima) // Si esta a menos de la distancia maxima, se activa un evento
   {
@@ -121,12 +114,17 @@ void loop()
   {
     ledState = LOW;
   }
-  
   digitalWrite(ledPin, LOW);
+  */
 
   /*
    * Comunicacion con nodemcu
    */
-  Serial.println("hola desde arduino");
+
+  snprintf(msj, 40, "{\"id\":1,\"valor\":\"%d\"}", adc_MQ);
+  //Serial.println("{\"fecha\":\"fecha del nodemcu\",\"areas\":[{\"id\":1,\"nombre\":\"area almacenaje\",\"sensores\":[{\"id\":1,\"tipo\":\"movimiento\",\"valor\":\"10\"},{\"id\":2,\"tipo\":\"humedad y temperatura\",\"valor\":\"20\"},{\"id\":3,\"tipo\":\"monoxido de carbono\",\"valor\":\"20\"}]}]}");
+  
+  Serial.println(msj);
+  delay(5000);
   
 }
