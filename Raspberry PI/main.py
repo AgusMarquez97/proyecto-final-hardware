@@ -15,7 +15,7 @@ class RaspberryServer(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length).decode('utf-8') # <--- Gets the data itself
         logging.info(" POST con request el siguiente req body:\n%s\n", post_data)
         postObject = json.loads(post_data)
-        logging.info(" objeto pareseado: %s", postObject)
+        #logging.info(" objeto pareseado: %s", postObject)
 
         self._set_response()
 

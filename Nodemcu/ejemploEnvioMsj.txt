@@ -1,24 +1,6 @@
 {
-  fecha: "fecha del nodemcu",
-  areas: [{
-    id: 1,
-    nombre: "area almacenaje",
-    sensores: [
-      {
-        id: 1,
-        tipo: "movimiento",
-        valor: "10"
-      },
-      {
-        id: 2,
-        tipo: "humedad y temperatura",
-        valor: "20"
-      },
-      {
-        id: 3,
-        tipo: "monoxido de carbono",
-        valor: "20"
-      },
-      ]
-  }]
+    "mac": "1c:bf:ce:12:5b:ed",
+    "sensor_type": "PRESION",
+    "value": 67.25,
+    "unit": "CELSIUS"
 }

@@ -1,22 +1,32 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
+#include <ArduinoJson.h>
 
 //PINS
 #define DHTPIN 7
 #define MQ7PIN 2
 #define TRIGPIN 9
 #define ECHOPIN 10
+#define SR5PIN 8
 
 #define DHTTYPE DHT11
 
 // Variables aux
 String str;
 const int distancia_maxima = 20;
+
 long duration; 
 int distance;
 DHT dht(DHTPIN, DHT11);
 const int ledPin =  LED_BUILTIN; // Se define a la led integrada en el arduino
 int ledState = LOW; // Se define un estado inicial HIGH = prendido, LOW = apagado
+
+bool movementDetected = LOW; // para detectar movimiento
+
+
+DynamicJsonDocument doc(1024);
+
+SoftwareSerial espSerial(5, 6);
 
 /*
 struct postRequestData{
@@ -39,35 +49,40 @@ void setup(){
   pinMode(ECHOPIN ,INPUT); // Pin echo sensor movimiento sonido
   pinMode(MQ7PIN, INPUT); // Pin MQ7 sensor gases
   pinMode(ledPin, OUTPUT); // led integrado en el arduino
+  pinMode(SR5PIN, INPUT); // Pin SR501 sensor de movimiento
 
   dht.begin(); // API DHT para el sensor de humedad y temperatura
   
   Serial.begin(9600); 
+  espSerial.begin(115200);
+
+  delay(5000);
 }
 
 void loop()
 {
-
-  char msj[40];
+  char msj[1024];
   /*
    * SENSOR DHT11 TEMPERATURA Y HUMEDAD
    */
-  /*  
+  
   float h = dht.readHumidity();        // humedad
   float t = dht.readTemperature();     // temperatura en Celcius
   
   if (isnan(h) || isnan(t)) 
     Serial.println("Failed to read from DHT sensor!");
   else
-  {
-  Serial.print(" Humidity: ");
-  Serial.print(h);
-  Serial.print("%  Temperature: ");
-  Serial.print(t);
-  Serial.println(" °C ");
-  }
+  {  
+  doc[0]["mac"] = ":7T";
+  doc[0]["sensor_type"] = "TEMPERATURE";
+  doc[0]["value"] = t;
+  doc[0]["unit"] = "°C";
 
-  */
+  doc[1]["mac"] = ":7H";
+  doc[1]["sensor_type"] = "HUMIDITY";
+  doc[1]["value"] = h;
+  doc[1]["unit"] = "% HR";  
+  }
 
 
   /*
@@ -82,16 +97,22 @@ void loop()
   int adc_MQ = analogRead(A0); //Lemos la salida analógica del MQ
   float voltaje = adc_MQ * (5.0 / 1023.0); //Convertimos la lectura en un valor de voltaje
 
-/*
-  if(adc_MQ > 100)
-      Serial.println("Se detecta un el GAS");
+  doc[2]["mac"] = ":A0";
+  doc[2]["sensor_type"] = "GAS";
+  doc[2]["value"] = adc_MQ;
+  doc[2]["unit"] = "PPM CO2";
 
-  Serial.print("adc:");
-  Serial.print(adc_MQ);
-  Serial.print("    voltaje:");
-  Serial.println(voltaje);
-*/
-    
+  /*
+   * SENSOR SR501
+   */
+ 
+  movementDetected = digitalRead(SR5PIN);  
+
+  doc[3]["mac"] = ":8M";
+  doc[3]["sensor_type"] = "MOVEMENT";
+  doc[3]["value"] = movementDetected;
+  doc[3]["unit"] = "BOOLEAN";
+   
   
    /*
    * SENSOR HC MOVIMIENTO
@@ -116,15 +137,15 @@ void loop()
   }
   digitalWrite(ledPin, LOW);
   */
-
-  /*
-   * Comunicacion con nodemcu
-   */
-
-  snprintf(msj, 40, "{\"id\":1,\"valor\":\"%d\"}", adc_MQ);
-  //Serial.println("{\"fecha\":\"fecha del nodemcu\",\"areas\":[{\"id\":1,\"nombre\":\"area almacenaje\",\"sensores\":[{\"id\":1,\"tipo\":\"movimiento\",\"valor\":\"10\"},{\"id\":2,\"tipo\":\"humedad y temperatura\",\"valor\":\"20\"},{\"id\":3,\"tipo\":\"monoxido de carbono\",\"valor\":\"20\"}]}]}");
   
+  serializeJson(doc, msj);
+
+  espSerial.println(msj);
+
   Serial.println(msj);
-  delay(5000);
+
+  msj[0] = 0;
+  
+  delay(2500);
   
 }
